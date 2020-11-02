@@ -1,4 +1,4 @@
-// video min: 36:42
+// video min:
 
 function removeFromArray(arr, elt) {
     for (var i = 0; i < arr.length; i++) {
@@ -9,13 +9,23 @@ function removeFromArray(arr, elt) {
 }
 
 
-var cols = 10;
-var rows = 10;
+function heuristic(a, b) {
+    // var d = sqrt(pow(b.i - a.i, 2) + pow(b.j - a.j, 2));
+    // var d = dist(a.i, a.j, b.i, b.j);    // Euclidean.
+    var d = abs(a.i-b.i) + abs(a.j-b.j);    // Manhattan.
+    return d;
+}
+
+
+var cols = 20;
+var rows = 20;
 var grid = new Array(cols);
 var openSet = [];
 var closeSet = [];
 var start;
 var end;
+var w, h;
+var path = [];
 
 
 // Object creation.
@@ -26,6 +36,7 @@ function Spot(i, j) {
     this.g = 0;     // Distance from start to this spot.
     this.h = 0;     // Heuristic distance from spot to end.
     this.neighbors = [];
+    this.previous = undefined;
 
     this.show = function(col) {
         fill(col);
@@ -75,11 +86,10 @@ function setup() {
     }
 
     start = grid[0][0];
-    end = grid[cols - 1][rows - 1];
+    // end = grid[cols - 1][rows - 1];
+    end = grid[10][6];
 
     openSet.push(start);
-
-
     console.log(grid);
 }
 
@@ -94,7 +104,8 @@ function draw() {
         }
 
         var current = openSet[winner];
-        if (current === openSet[end]) {
+        if (current === end) {
+            noLoop();
             console.log("Done!");
         }
 
@@ -104,6 +115,26 @@ function draw() {
         var neighbors = current.neighbors;
         for (var i = 0; i < neighbors.length; i++) {
             var neighbor = neighbors[i];
+
+            if (!closeSet.includes(neighbor)) {
+                var tempG = current.g + 1;
+
+                // Already evaluated and may have a better g score. Otherwise needs its g score to be updated.
+                if (openSet.includes(neighbor)) {
+                    if  (tempG < neighbor.g) {
+                        neighbor.g = tempG;
+                    }
+                }
+                // Not evaluated yet, so can directly get the new g score and be added to openSet.
+                else {
+                    neighbor.g = tempG;
+                    openSet.push(neighbor);
+                }
+
+                neighbor.h = heuristic(neighbor, end);
+                neighbor.f = neighbor.g + neighbor.h;
+                neighbor.previous = current;
+            }
         }
 
 
@@ -120,11 +151,31 @@ function draw() {
         }
     }
 
+    for (var i = 0; i < closeSet.length; i++) {
+        closeSet[i].show(color(255, 0, 0));
+    }
+
     for (var i = 0; i < openSet.length; i++) {
         openSet[i].show(color(0, 255, 0));
     }
 
-    for (var i = 0; i < closeSet.length; i++) {
-        closeSet[i].show(color(0, 0, 255));
+
+    // Find the path.
+    path = [];
+    var temp = current;
+    path.push(temp);
+    while (temp.previous) {
+        path.push(temp.previous);
+        temp = temp.previous;
     }
+
+    for (var i = 0; i < path.length; i++) {
+        path[i].show(color(0,0,255));
+    }
+
+
+
+
+
+
 }
