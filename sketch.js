@@ -1,5 +1,5 @@
 var boxsize = 10;
-var cols = 150;
+var cols = 50;
 var rows = 50;
 var wallProportion = 0.3;
 var grid = new Array(cols);
@@ -7,7 +7,7 @@ var openSet = [];
 var closeSet = [];
 var start;
 var end;
-var boxsize, h;
+var boxsize;
 var path = [];
 var noSolution = false;
 
@@ -22,8 +22,8 @@ function removeFromArray(arr, elt) {
 
 function heuristic(a, b) {
     // var d = sqrt(pow(b.i - a.i, 2) + pow(b.j - a.j, 2));
-    var d = dist(a.i, a.j, b.i, b.j);    // Euclidean.
-    // var d = abs(a.i - b.i) + abs(a.j - b.j);    // Manhattan.
+    // var d = dist(a.i, a.j, b.i, b.j);    // Euclidean.
+    var d = abs(a.i - b.i) + abs(a.j - b.j);    // Manhattan.
     return d;
 }
 
@@ -41,10 +41,14 @@ function Spot(i, j) {
     this.show = function(col) {
         fill(col);
         if (this.wall) {
-            fill(0);
+            fill(color(random(255), random(255), random(255)));
+            // fill(color(0));
         }
         noStroke(0);
-        rect(this.i * boxsize, this.j * boxsize, boxsize - 1, boxsize - 1)
+        var variable_importante_webo_frito = random(-5, 5);
+        // rect(this.i * boxsize + variable_importante_webo_frito, this.j * boxsize + variable_importante_webo_frito, boxsize - variable_importante_webo_frito, boxsize - variable_importante_webo_frito);
+        circle(this.i * boxsize + boxsize / 2, this.j * boxsize + boxsize / 2, boxsize + variable_importante_webo_frito);
+
     }
 
     this.addNeighbors = function() {
@@ -68,6 +72,7 @@ function Spot(i, j) {
 }
 
 function setup() {
+    // frameRate(5);
     createCanvas(boxsize * cols, boxsize * rows);
 
     for (var i = 0; i < cols; i++) {
@@ -151,7 +156,7 @@ function draw() {
         noLoop();
     }
 
-    background(0);
+    background(random(255));
 
     for (var i = 0; i < cols; i++) {
         for (var j = 0; j < rows; j++) {
