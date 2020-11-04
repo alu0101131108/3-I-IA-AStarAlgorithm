@@ -1,15 +1,22 @@
-var boxsize = 10;
-var cols = 50;
-var rows = 50;
-var wallProportion = 0.3;
-var grid = new Array(cols);
-var openSet = [];
-var closeSet = [];
+const boxsize = 10;
+const cols = 50;
+const rows = 50;
+const wallProportion = 0.3;
+var grid;
+var openSet;
+var closeSet;
 var start;
 var end;
-var boxsize;
-var path = [];
-var noSolution = false;
+var path;
+
+// Tags
+const INIT = 0;
+const WORKING = 1;
+const SOLVED = 2;
+const NOPATH = 3;
+
+var status = INIT;
+
 
 
 function removeFromArray(arr, elt) {
@@ -27,7 +34,25 @@ function heuristic(a, b) {
     return d;
 }
 
-// Object creation.
+function resetDataStructures() {
+    closeSet = [];
+    openSet = [];
+    path = [];
+    grid = new Array(cols);
+}
+
+function drawGrid() {
+    background(0);
+    start.wall = false;
+    end.wall = false;
+    for (var j = 0; j < rows; j++) {
+        for (var i = 0; i < cols; i++) {
+            grid[i][j].show(color(255));
+        }
+    }
+}
+
+// Cell creation.
 function Spot(i, j) {
     this.i = i;
     this.j = j;
@@ -78,22 +103,56 @@ function Spot(i, j) {
 
 }
 
-function setup() {
-    createCanvas(boxsize * cols, boxsize * rows);
+function keyPressed() {
 
-    for (var i = 0; i < cols; i++) {
-        grid[i] = new Array(rows);
+    // Restart grid.
+    if (keyCode == 82) {
+        status = INIT;
+        setup();
     }
 
-    for (var j = 0; j < rows; j++) {
-        for (var i = 0; i < cols; i++) {
-            grid[i][j] = new Spot(i, j);
-            if (random() < wallProportion) {
-                grid[i][j].wall = true;
+    // Automatic wall set.
+    if (keyCode == 65) {
+        if (status == INIT) {
+            for (var j = 0; j < rows; j++) {
+                for (var i = 0; i < cols; i++) {
+                    if (random(1) < wallProportion) {
+                        grid[i][j].wall = true;
+                    }
+                    else {
+                        grid[i][j].wall = false;
+                    }
+                }
             }
+        }
+        else {
+            console.log("Search already started, can not override the grid values.");
         }
     }
 
+    // Initiate A* Algorithm.
+    if (keyCode == 83) {
+        if (status == WORKING) {
+            console.log("Algorithm currently running.");
+        }
+        status = WORKING;
+    }
+
+}
+
+function setup() {
+    createCanvas(boxsize * cols, boxsize * rows);
+    resetDataStructures();
+
+    // Init grid.
+    for (var j = 0; j < rows; j++) {
+        for (var i = 0; i < cols; i++) {
+            if (j == 0) grid[i] = new Array(rows);
+            grid[i][j] = new Spot(i, j);
+        }
+    }
+
+    // Find Neighbors.
     for (var j = 0; j < rows; j++) {
         for (var i = 0; i < cols; i++) {
             grid[i][j].addNeighbors();
@@ -103,14 +162,13 @@ function setup() {
     start = grid[0][0];
     end = grid[cols - 1][rows - 1];
 
-    start.wall = false;
-    end.wall = false;
+    drawGrid();
 
     openSet.push(start);
-    console.log(grid);
 }
 
-function draw() {
+function AStarAlgorithm() {
+
     if (openSet.length > 0) {
 
         var winner = 0;
@@ -122,7 +180,7 @@ function draw() {
 
         var current = openSet[winner];
         if (current === end) {
-            noLoop();
+            status = SOLVED;
             console.log("Done!");
         }
 
@@ -157,9 +215,8 @@ function draw() {
 
     }
     else {
-        noSolution = true;
+        status = NOPATH;
         console.log("No solution!");
-        noLoop();
     }
 
     background(0);
@@ -180,7 +237,7 @@ function draw() {
 
 
     // Find the path.
-    if (!noSolution) {
+    if (status == WORKING || status == SOLVED) {
         path = [];
         var temp = current;
         path.push(temp);
@@ -188,10 +245,26 @@ function draw() {
             path.push(temp.previous);
             temp = temp.previous;
         }
-    }
 
-    for (var i = 0; i < path.length; i++) {
-        path[i].show(color(0,0,255));
+        for (var i = 0; i < path.length; i++) {
+            path[i].show(color(0,0,255));
+        }
     }
 
 }
+
+function draw() {
+    if (status == INIT) {
+        drawGrid();
+        if (mouseIsPressed) {
+            var pressed_col = constrain(ceil(mouseX / boxsize), 1, cols) - 1;
+            var pressed_row = constrain(ceil(mouseY / boxsize), 1, rows) - 1;
+            grid[pressed_col][pressed_row].wall = true;
+        }
+    }
+    if (status == WORKING) {
+        AStarAlgorithm();
+    }
+}
+
+// https://en.wikipedia.org/wiki/Flood_fill
