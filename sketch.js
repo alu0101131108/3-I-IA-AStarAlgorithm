@@ -2,20 +2,21 @@ const boxsize = 10;
 const cols = 50;
 const rows = 50;
 const wallProportion = 0.3;
+var pencilSize = 0;
+var pencilSizeLimit;
 var grid;
 var openSet;
 var closeSet;
 var start;
 var end;
 var path;
+var status;
 
 // Tags
 const INIT = 0;
 const WORKING = 1;
 const SOLVED = 2;
 const NOPATH = 3;
-
-var status = INIT;
 
 
 
@@ -29,8 +30,8 @@ function removeFromArray(arr, elt) {
 
 function heuristic(a, b) {
     // var d = sqrt(pow(b.i - a.i, 2) + pow(b.j - a.j, 2));
-    // var d = dist(a.i, a.j, b.i, b.j);    // Euclidean.
-    var d = abs(a.i - b.i) + abs(a.j - b.j);    // Manhattan.
+    var d = dist(a.i, a.j, b.i, b.j);    // Euclidean.
+    // var d = abs(a.i - b.i) + abs(a.j - b.j);    // Manhattan.
     return d;
 }
 
@@ -52,7 +53,35 @@ function drawGrid() {
     }
 }
 
-// Cell creation.
+function checkPencil() {
+    // Considering pencilSize = 0, the area converted into a wall will be a 1x1 pixel matrix,
+    // where the clicked pixel is the center of that matrix.
+    // Considering a bigger pencilSize this matrix would be bigger. PencilSize = 1: 2x2 ... etc.
+    // topleft_ij and downright_ij represent the topleft and bottomright corner
+    // displacement from center, which is the same for i and j.
+    if (mouseIsPressed) {
+
+        var topleft_ij = floor(pencilSize / 2) * -1;
+        var downright_ij =  ceil(pencilSize / 2);
+        var pressed_col = ceil(mouseX / boxsize) - 1;
+        var pressed_row = ceil(mouseY / boxsize) - 1;
+
+        if (mouseButton === LEFT) {
+            for (var i = topleft_ij; i <= downright_ij; i++)
+                for (var j = topleft_ij; j <= downright_ij; j++)
+                    if (pressed_col + i >= 0 && pressed_col + i < cols && pressed_row + j >= 0 && pressed_row + j < rows)
+                        grid[pressed_col + i][pressed_row + j].wall = true;
+
+        }
+        else {
+            for (var i = topleft_ij; i <= downright_ij; i++)
+                for (var j = topleft_ij; j <= downright_ij; j++)
+                    if (pressed_col + i >= 0 && pressed_col + i < cols && pressed_row + j >= 0 && pressed_row + j < rows)
+                        grid[pressed_col + i][pressed_row + j].wall = false;
+        }
+    }
+}
+
 function Spot(i, j) {
     this.i = i;
     this.j = j;
@@ -111,6 +140,15 @@ function keyPressed() {
         setup();
     }
 
+    // Set pencil size (up and down).
+    if (keyCode == 38) {
+        pencilSize = constrain(pencilSize + 1, 0, pencilSizeLimit);
+        console.log(pencilSize);
+    }
+    if (keyCode == 40) {
+        pencilSize = constrain(pencilSize - 1, 0, pencilSizeLimit);
+        console.log(pencilSize);
+    }
     // Automatic wall set.
     if (keyCode == 65) {
         if (status == INIT) {
@@ -159,10 +197,10 @@ function setup() {
         }
     }
 
+    status = INIT;
+    pencilSizeLimit = min(cols, rows) - 1;
     start = grid[0][0];
     end = grid[cols - 1][rows - 1];
-
-    drawGrid();
 
     openSet.push(start);
 }
@@ -256,15 +294,19 @@ function AStarAlgorithm() {
 function draw() {
     if (status == INIT) {
         drawGrid();
-        if (mouseIsPressed) {
-            var pressed_col = constrain(ceil(mouseX / boxsize), 1, cols) - 1;
-            var pressed_row = constrain(ceil(mouseY / boxsize), 1, rows) - 1;
-            grid[pressed_col][pressed_row].wall = true;
-        }
+        checkPencil();
     }
     if (status == WORKING) {
         AStarAlgorithm();
     }
+}
+
+
+
+
+// Disables context menu when right mouse button is clicked.
+document.oncontextmenu = function() {
+  return false;
 }
 
 // https://en.wikipedia.org/wiki/Flood_fill
