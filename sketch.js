@@ -1,6 +1,7 @@
 const boxsize = 10;
 const cols = 50;
 const rows = 50;
+const heuristicMode = 1;            // 0: Euclidean Distance    1: Manhattan Distance.
 const wallProportion = 0.3;
 var pencilSize = 0;
 var pencilSizeLimit;
@@ -29,10 +30,17 @@ function removeFromArray(arr, elt) {
 }
 
 function heuristic(a, b) {
-    // var d = sqrt(pow(b.i - a.i, 2) + pow(b.j - a.j, 2));
-    var d = dist(a.i, a.j, b.i, b.j);    // Euclidean.
-    // var d = abs(a.i - b.i) + abs(a.j - b.j);    // Manhattan.
-    return d;
+    var d;
+    switch (heuristicMode) {
+        case 0:     // Euclidean.
+            d = dist(a.i, a.j, b.i, b.j);       // Same as: sqrt(pow(b.i - a.i, 2) + pow(b.j - a.j, 2));
+            break;
+        case 1:     // Manhattan.
+            d = abs(a.i - b.i) + abs(a.j - b.j);
+            break;
+        default:
+            d = dist(a.i, a.j, b.i, b.j);
+    }
 }
 
 function resetDataStructures() {
