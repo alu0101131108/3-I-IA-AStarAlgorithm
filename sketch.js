@@ -228,13 +228,11 @@ function keyPressed() {
         if (keyCode == 97) {
             wallProportion -= 0.1;
             console.log("Wall proportion: " + wallProportion);
-            setup();
         }
         // Set wall proportion (bigger).
         if (keyCode == 99) {
             wallProportion += 0.1;
             console.log("Wall proportion: " + wallProportion);
-            setup();
         }
 
         // Set size default values.
