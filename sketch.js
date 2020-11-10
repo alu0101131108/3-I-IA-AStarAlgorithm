@@ -1,7 +1,7 @@
-const cols = 30;
-const rows = 30;
-const boxsize = 15;
-const wallProportion = 0.3;
+var cols = 30;
+var rows = 30;
+var boxsize = 15;
+var wallProportion = 0.3;
 var heuristicMode = 1;            // 0: Euclidean Distance    1: Manhattan Distance.
 var pencilSize;
 var pencilSizeLimit;
@@ -161,17 +161,90 @@ function keyPressed() {
         setup();
     }
 
+    // Show current values.
+    if (keyCode == 96) {
+        console.clear();
+        console.log("Current values:");
+        console.log("\tColumns: " + cols);
+        console.log("\tRows: " + rows);
+        console.log("\tSize: " + boxsize);
+        console.log("\tWall proportion: " + wallProportion);
+    }
+
     // Initial config options.
     if (status == INIT) {
-        // Set pencil size (up and down).
+        // Set pencil size (bigger).
         if (keyCode == 38) {
             pencilSize = constrain(pencilSize + 1, 0, pencilSizeLimit);
             console.log("Wall pencil size: " + pencilSize);
         }
+        // Set pencil size (smaller).
         if (keyCode == 40) {
             pencilSize = constrain(pencilSize - 1, 0, pencilSizeLimit);
             console.log("Wall pencil size: " + pencilSize);
         }
+
+        // Set grid width (bigger).
+        if (keyCode == 102) {
+            cols += 1;
+            console.log("Added one column.");
+            setup();
+        }
+        // Set grid width (smaller).
+        if (keyCode == 100) {
+            cols -= 1;
+            console.log("Removed one column.");
+            setup();
+        }
+        // Set grid height (bigger).
+        if (keyCode == 98) {
+            rows += 1;
+            console.log("Added one row.");
+            setup();
+        }
+        // Set grid width (smaller).
+        if (keyCode == 104) {
+            rows -= 1;
+            console.log("Removed one column.");
+            setup();
+        }
+
+        // Set boxsize (bigger).
+        if (keyCode == 105) {
+            boxsize += 1;
+            console.log("Grid size: " + boxsize);
+            setup();
+        }
+        // Set boxsize (smaller).
+        if (keyCode == 103) {
+            boxsize -= 1;
+            console.log("Grid size: " + boxsize);
+            setup();
+        }
+
+        // Set wall proportion (smaller).
+        if (keyCode == 97) {
+            wallProportion -= 0.1;
+            console.log("Wall proportion: " + wallProportion);
+            setup();
+        }
+        // Set wall proportion (bigger).
+        if (keyCode == 99) {
+            wallProportion += 0.1;
+            console.log("Wall proportion: " + wallProportion);
+            setup();
+        }
+
+        // Set size default values.
+        if (keyCode == 101) {
+            cols = 30;
+            rows = 30;
+            boxsize = 15;
+            wallProportion = 0.3;
+            console.log("Values set to default");
+            setup();
+        }
+
 
         // Automatic wall set.
         if (keyCode == 65) {
