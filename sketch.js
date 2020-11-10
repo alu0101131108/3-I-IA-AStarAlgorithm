@@ -1,9 +1,9 @@
-const boxsize = 25;
 const cols = 30;
 const rows = 30;
-const heuristicMode = 1;            // 0: Euclidean Distance    1: Manhattan Distance.
+const boxsize = 15;
 const wallProportion = 0.3;
-var pencilSize = 0;
+var heuristicMode = 1;            // 0: Euclidean Distance    1: Manhattan Distance.
+var pencilSize;
 var pencilSizeLimit;
 var grid;
 var openSet;
@@ -51,15 +51,34 @@ function resetDataStructures() {
     grid = new Array(cols);
 }
 
-function drawGrid() {
+function showFrame() {
     background(0);
-    start.wall = false;
-    end.wall = false;
+
+    // Non analized spots.
     for (var j = 0; j < rows; j++) {
         for (var i = 0; i < cols; i++) {
             grid[i][j].show(color(255));
         }
     }
+
+    // Close set.
+    for (var i = 0; i < closeSet.length; i++) {
+        closeSet[i].show(color(255, 0, 0));
+    }
+
+    // Open set.
+    for (var i = 0; i < openSet.length; i++) {
+        openSet[i].show(color(0, 255, 0));
+    }
+
+    // Path.
+    for (var i = 0; i < path.length; i++) {
+        path[i].show(color(0,0,255));
+    }
+
+    start.show(color(0, 117, 27));
+    end.show(color(61, 0, 0));
+
 }
 
 function checkPencil() {
@@ -88,6 +107,8 @@ function checkPencil() {
                     if (pressed_col + i >= 0 && pressed_col + i < cols && pressed_row + j >= 0 && pressed_row + j < rows)
                         grid[pressed_col + i][pressed_row + j].wall = false;
         }
+        start.wall = false;
+        end.wall = false;
     }
 }
 
@@ -102,14 +123,6 @@ function Spot(i, j) {
     this.wall = false;
 
     this.show = function(col) {
-        // fill(col);
-        // if (this.wall) {
-        //     fill(0);
-        // }
-        // noStroke(0);
-        // rect(this.i * boxsize, this.j * boxsize, boxsize - 1, boxsize - 1);
-        // circle(this.i * boxsize + boxsize / 2, this.j * boxsize + boxsize / 2, boxsize + 1);
-
         noStroke(0);
         if (this.wall) {
             fill(0);
@@ -142,25 +155,26 @@ function Spot(i, j) {
 }
 
 function keyPressed() {
-
     // Restart grid.
     if (keyCode == 82) {
         status = INIT;
         setup();
     }
 
-    // Set pencil size (up and down).
-    if (keyCode == 38) {
-        pencilSize = constrain(pencilSize + 1, 0, pencilSizeLimit);
-        console.log("Wall pencil size: " + pencilSize);
-    }
-    if (keyCode == 40) {
-        pencilSize = constrain(pencilSize - 1, 0, pencilSizeLimit);
-        console.log(pencilSize);
-    }
-    // Automatic wall set.
-    if (keyCode == 65) {
-        if (status == INIT) {
+    // Initial config options.
+    if (status == INIT) {
+        // Set pencil size (up and down).
+        if (keyCode == 38) {
+            pencilSize = constrain(pencilSize + 1, 0, pencilSizeLimit);
+            console.log("Wall pencil size: " + pencilSize);
+        }
+        if (keyCode == 40) {
+            pencilSize = constrain(pencilSize - 1, 0, pencilSizeLimit);
+            console.log("Wall pencil size: " + pencilSize);
+        }
+
+        // Automatic wall set.
+        if (keyCode == 65) {
             for (var j = 0; j < rows; j++) {
                 for (var i = 0; i < cols; i++) {
                     if (random(1) < wallProportion) {
@@ -171,20 +185,53 @@ function keyPressed() {
                     }
                 }
             }
+            start.wall = false;
+            end.wall = false;
         }
-        else {
-            console.log("Search already started, can not override the grid values.");
+
+        // Initiate A* Algorithm.
+        if (keyCode == 83) {
+            openSet.push(start);
+            status = WORKING;
+        }
+
+        // Change heuristic function.
+        if (keyCode == 72) {
+            if (heuristicMode == 0) {
+                heuristicMode = 1;
+                console.log("Heuristic: Manhattan.");
+            }
+            else {
+                heuristicMode = 0;
+                console.log("Heuristic: Euclidean.");
+            }
+        }
+
+        // Set Initial spot.
+        if (keyCode == 73) {
+            var pressed_col = ceil(mouseX / boxsize) - 1;
+            var pressed_row = ceil(mouseY / boxsize) - 1;
+            if (pressed_col >= 0 && pressed_col < cols && pressed_row >= 0 && pressed_row < rows) {
+                start = grid[pressed_col][pressed_row];
+                start.wall = false;
+                console.log("Start point set at: (" + pressed_col + ", " + pressed_row + ").");
+            }
+        }
+
+        // Set Ending spot.
+        if (keyCode == 69) {
+            var pressed_col = ceil(mouseX / boxsize) - 1;
+            var pressed_row = ceil(mouseY / boxsize) - 1;
+            if (pressed_col >= 0 && pressed_col < cols && pressed_row >= 0 && pressed_row < rows) {
+                end = grid[pressed_col][pressed_row];
+                end.wall = false;
+                console.log("Ending point set at: (" + pressed_col + ", " + pressed_row + ").");
+            }
         }
     }
-
-    // Initiate A* Algorithm.
-    if (keyCode == 83) {
-        if (status == WORKING) {
-            console.log("Algorithm currently running.");
-        }
-        status = WORKING;
+    else {
+        console.log("Search already started.");
     }
-
 }
 
 function setup() {
@@ -207,15 +254,13 @@ function setup() {
     }
 
     status = INIT;
+    pencilSize = 0;
     pencilSizeLimit = min(cols, rows) - 1;
     start = grid[0][0];
     end = grid[cols - 1][rows - 1];
-
-    openSet.push(start);
 }
 
 function AStarAlgorithm() {
-    background(0);
 
     if (openSet.length > 0) {
 
@@ -229,7 +274,7 @@ function AStarAlgorithm() {
 
         var current = openSet[winner];
 
-        // We may have got to end.
+        // May have reached the end.
         if (current === end) {
             status = SOLVED;
             console.log("Done!");
@@ -270,20 +315,6 @@ function AStarAlgorithm() {
         console.log("No solution!");
     }
 
-    for (var i = 0; i < cols; i++) {
-        for (var j = 0; j < rows; j++) {
-            grid[i][j].show(color(255));
-        }
-    }
-
-    for (var i = 0; i < closeSet.length; i++) {
-        closeSet[i].show(color(255, 0, 0));
-    }
-
-    for (var i = 0; i < openSet.length; i++) {
-        openSet[i].show(color(0, 255, 0));
-    }
-
     // Find the path.
     if (status == WORKING || status == SOLVED) {
         path = [];
@@ -293,21 +324,18 @@ function AStarAlgorithm() {
             path.push(temp.previous);
             temp = temp.previous;
         }
-
-        for (var i = 0; i < path.length; i++) {
-            path[i].show(color(0,0,255));
-        }
     }
 
 }
 
 function draw() {
     if (status == INIT) {
-        drawGrid();
         checkPencil();
+        showFrame();
     }
     if (status == WORKING) {
         AStarAlgorithm();
+        showFrame();
     }
 }
 
@@ -319,4 +347,4 @@ document.oncontextmenu = function() {
   return false;
 }
 
-// https://en.wikipedia.org/wiki/Flood_fillr
+// https://en.wikipedia.org/wiki/Flood_fill
