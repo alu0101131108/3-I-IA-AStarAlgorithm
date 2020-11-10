@@ -1,7 +1,7 @@
-const boxsize = 10;
-const cols = 50;
-const rows = 50;
-const heuristicMode = 0;            // 0: Euclidean Distance    1: Manhattan Distance.
+const boxsize = 25;
+const cols = 30;
+const rows = 30;
+const heuristicMode = 1;            // 0: Euclidean Distance    1: Manhattan Distance.
 const wallProportion = 0.3;
 var pencilSize = 0;
 var pencilSizeLimit;
@@ -18,7 +18,6 @@ const INIT = 0;
 const WORKING = 1;
 const SOLVED = 2;
 const NOPATH = 3;
-
 
 
 function removeFromArray(arr, elt) {
@@ -40,7 +39,9 @@ function heuristic(a, b) {
             break;
         default:
             d = dist(a.i, a.j, b.i, b.j);
+            break;
     }
+    return d;
 }
 
 function resetDataStructures() {
@@ -218,6 +219,7 @@ function AStarAlgorithm() {
 
     if (openSet.length > 0) {
 
+        // Find the node in openSet with lowest f score. Will be stored at openSet[winner].
         var winner = 0;
         for (var i = 0; i < openSet.length; i++) {
             if(openSet[i].f < openSet[winner].f) {
@@ -226,6 +228,8 @@ function AStarAlgorithm() {
         }
 
         var current = openSet[winner];
+
+        // We may have got to end.
         if (current === end) {
             status = SOLVED;
             console.log("Done!");
@@ -315,4 +319,4 @@ document.oncontextmenu = function() {
   return false;
 }
 
-// https://en.wikipedia.org/wiki/Flood_fill
+// https://en.wikipedia.org/wiki/Flood_fillr
