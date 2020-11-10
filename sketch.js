@@ -1,9 +1,10 @@
+// Default values.
 var cols = 30;
 var rows = 30;
 var boxsize = 15;
 var wallProportion = 0.3;
 var heuristicMode = 1;            // 0: Euclidean Distance    1: Manhattan Distance.
-var pencilSize;
+var pencilSize = 0;
 var pencilSizeLimit;
 var grid;
 var openSet;
@@ -169,6 +170,7 @@ function keyPressed() {
         console.log("\tRows: " + rows);
         console.log("\tSize: " + boxsize);
         console.log("\tWall proportion: " + wallProportion);
+        console.log("\tWall pencil size: " + pencilSize);
     }
 
     // Initial config options.
@@ -241,6 +243,7 @@ function keyPressed() {
             rows = 30;
             boxsize = 15;
             wallProportion = 0.3;
+            pencilSize = 0;
             console.log("Values set to default");
             setup();
         }
@@ -308,7 +311,8 @@ function keyPressed() {
 }
 
 function setup() {
-    createCanvas(boxsize * cols, boxsize * rows);
+    let canvas = createCanvas(boxsize * cols, boxsize * rows);
+    canvas.style("border: 5px solid black; margin: 20px");
     resetDataStructures();
 
     // Init grid.
@@ -327,7 +331,6 @@ function setup() {
     }
 
     status = INIT;
-    pencilSize = 0;
     pencilSizeLimit = min(cols, rows) - 1;
     start = grid[0][0];
     end = grid[cols - 1][rows - 1];
