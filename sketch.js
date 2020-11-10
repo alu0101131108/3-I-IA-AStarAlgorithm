@@ -1,7 +1,7 @@
 const boxsize = 10;
 const cols = 50;
 const rows = 50;
-const heuristicMode = 1;            // 0: Euclidean Distance    1: Manhattan Distance.
+const heuristicMode = 0;            // 0: Euclidean Distance    1: Manhattan Distance.
 const wallProportion = 0.3;
 var pencilSize = 0;
 var pencilSizeLimit;
@@ -151,7 +151,7 @@ function keyPressed() {
     // Set pencil size (up and down).
     if (keyCode == 38) {
         pencilSize = constrain(pencilSize + 1, 0, pencilSizeLimit);
-        console.log(pencilSize);
+        console.log("Wall pencil size: " + pencilSize);
     }
     if (keyCode == 40) {
         pencilSize = constrain(pencilSize - 1, 0, pencilSizeLimit);
@@ -214,6 +214,7 @@ function setup() {
 }
 
 function AStarAlgorithm() {
+    background(0);
 
     if (openSet.length > 0) {
 
@@ -265,8 +266,6 @@ function AStarAlgorithm() {
         console.log("No solution!");
     }
 
-    background(0);
-
     for (var i = 0; i < cols; i++) {
         for (var j = 0; j < rows; j++) {
             grid[i][j].show(color(255));
@@ -280,7 +279,6 @@ function AStarAlgorithm() {
     for (var i = 0; i < openSet.length; i++) {
         openSet[i].show(color(0, 255, 0));
     }
-
 
     // Find the path.
     if (status == WORKING || status == SOLVED) {
