@@ -1,8 +1,8 @@
 // Default values.
 var cols = 30;
 var rows = 30;
-var boxsize = 15;
 var wallProportion = 0.3;
+var boxsize = 15;
 var heuristicMode = 1;            // 0: Euclidean Distance    1: Manhattan Distance.
 var pencilSize = 0;
 var pencilSizeLimit;
@@ -13,6 +13,7 @@ var start;
 var end;
 var path;
 var status;
+var counter = 0;
 
 // Tags
 const INIT = 0;
@@ -20,9 +21,13 @@ const WORKING = 1;
 const SOLVED = 2;
 const NOPATH = 3;
 
+function count() {
+    counter++;
+    // console.log(counter);
+}
 
 function removeFromArray(arr, elt) {
-    for (var i = 0; i < arr.length; i++) {
+    for (var i = arr.length - 1; i >= 0; i--) {
         if (arr[i] == elt) {
             arr.splice(i, 1);
         }
@@ -265,6 +270,8 @@ function keyPressed() {
 
         // Initiate A* Algorithm.
         if (keyCode == 83) {
+            counter = 0;
+            setInterval(count, 1);    //  Init counter and increment it each 100 miliseconds.
             openSet.push(start);
             status = WORKING;
         }
@@ -351,7 +358,10 @@ function AStarAlgorithm() {
         // May have reached the end.
         if (current === end) {
             status = SOLVED;
-            console.log("Done!");
+            console.log("Done in: " + counter + " miliseconds");
+            console.log("Expanded nodes: " + closeSet.length);
+            console.log("path nodes: " + path.length);
+            showFrame();
         }
 
         removeFromArray(openSet, current);
